@@ -3,6 +3,7 @@ package com.microsoft.build;
 import static com.microsoft.build.BuilderUtil.LANGS;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.docfx.doclet.RepoMetadata;
 import com.microsoft.lookup.PackageLookup;
@@ -376,7 +377,7 @@ public class PackageOverviewFile {
             .append("<td><a href=\"")
             .append(linkPrefix + packageChildSummary.uid)
             .append("\">")
-            .append(packageChildSummary.uid)
+            .append(withLineBreaks(packageChildSummary.uid))
             .append("</a></td>\n")
             .append("<td>\n")
             .append(packageChildSummary.summary != null ? packageChildSummary.summary : "")
@@ -416,5 +417,19 @@ public class PackageOverviewFile {
 
   public void setFileName(String fileName) {
     this.fileName = fileName;
+  }
+
+  @VisibleForTesting
+  static String withLineBreaks(String uid) {
+    Pattern p = Pattern.compile("[a-zA-Z\\d][a-z\\d]+\\.|[A-Z][a-z]+");
+    Matcher m = p.matcher(uid);
+    if (!m.find()) {
+      return uid;
+    }
+    StringBuilder s = new StringBuilder();
+    while (m.find()) {
+      m.appendReplacement(s, "<wbr>" + m.group());
+    }
+    return s.toString();
   }
 }
